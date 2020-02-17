@@ -115,15 +115,15 @@
 <meta property="og:site_name" content="金天的个人博客">
 <meta property="og:description" content="本文介绍 深度学习量化之GEMM通用矩阵乘法">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://yoursite.com/2019/06/27/2019_06_27_14_深度学习量化之GEMM通用矩阵乘法/assets/1561617543307.png">
-<meta property="og:image" content="http://yoursite.com/2019/06/27/2019_06_27_14_深度学习量化之GEMM通用矩阵乘法/assets/1561617750179.png">
-<meta property="og:image" content="http://yoursite.com/2019/06/27/2019_06_27_14_深度学习量化之GEMM通用矩阵乘法/assets/1561617850804.png">
-<meta property="og:image" content="http://yoursite.com/2019/06/27/2019_06_27_14_深度学习量化之GEMM通用矩阵乘法/assets/1561618157960.png">
-<meta property="og:updated_time" content="2020-02-17T06:01:58.934Z">
+<meta property="og:image" content="http://yoursite.com/images/1561617543307.png">
+<meta property="og:image" content="http://yoursite.com/images/1561617750179.png">
+<meta property="og:image" content="http://yoursite.com/images/1561617850804.png">
+<meta property="og:image" content="http://yoursite.com/images/1561618157960.png">
+<meta property="og:updated_time" content="2020-02-17T06:09:33.745Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="深度学习量化之GEMM通用矩阵乘法">
 <meta name="twitter:description" content="本文介绍 深度学习量化之GEMM通用矩阵乘法">
-<meta name="twitter:image" content="http://yoursite.com/2019/06/27/2019_06_27_14_深度学习量化之GEMM通用矩阵乘法/assets/1561617543307.png">
+<meta name="twitter:image" content="http://yoursite.com/images/1561617543307.png">
 
 
 
@@ -401,7 +401,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2020-02-17 14:01:58" itemprop="dateModified" datetime="2020-02-17T14:01:58+08:00">2020-02-17</time>
+                <time title="修改时间：2020-02-17 14:09:33" itemprop="dateModified" datetime="2020-02-17T14:09:33+08:00">2020-02-17</time>
               
             
           </span>
@@ -466,12 +466,12 @@
 </blockquote>
 <h2 id="GEMM"><a href="#GEMM" class="headerlink" title="GEMM"></a>GEMM</h2><p>深度学习走到最后，就得从理论到应用部署。除了一些网络设计，新的优化方法，新的任务，已有任务的指标刷新等领域以外，深度学习模型的量化是一个很重要的领域，这基本上是深度学习的根基了，就好像建造上层操作系统的底层优化库一般，没有它，别人的系统可以做的很优化有顺畅而你不行。</p>
 <p>那么GEMM是什么？一种通用矩阵乘法。我们来看一看卷积的运算方式。</p>
-<p><img src="./assets/1561617543307.png" alt="1561617543307"></p>
+<p><img src="/images/1561617543307.png" alt="1561617543307"></p>
 <p>通过一个卷积核，对原图进行运算，每一个卷积核将得到一个固定的输出，请注意，不管原图的通道是多少，经过一个卷积核运算之后，都会变成一个维度的。最终featuremaps的channel取决于你用多少个卷积。</p>
 <p>实际上这种算法在执行效率上会很低。即便是最老的caffe，人家用的也是im2col算法，啥是im2col？你卷积的时候，可以每个卷积区域拉伸为一个Patch，如下面所示：</p>
-<p><img src="./assets/1561617750179.png" alt="1561617750179"></p>
+<p><img src="/images/1561617750179.png" alt="1561617750179"></p>
 <p>如上所示，现在相当于是将每个待卷积区域拉伸为一个Patch。这样就可以变成矩阵的相乘：</p>
-<p><img src="./assets/1561617850804.png" alt="1561617850804"></p>
+<p><img src="/images/1561617850804.png" alt="1561617850804"></p>
 <p>基本上GEMM就是一个网络的核心，因为大多数的运算都集中在卷积和全连接，而这两者的本质就是矩阵的惩罚，上面也可以看到卷积通过转换可以直接变为矩阵的乘法。</p>
 <p><strong>我觉得从零实现一下GEMM也就是卷积算法，是有必要的</strong>.</p>
 <p>我们用伪代码来写一下两个矩阵 A:mxk 和 B:  kxn 的矩阵乘法：</p>
@@ -482,7 +482,7 @@
 <li>同样是矩阵相乘，那么如果是不同的尺寸，效率有啥区别？比如，我们可以先遍历m，也可以先遍历n，如果m比n大应该用哪种顺序更好？</li>
 </ul>
 <h2 id="Winograd算法"><a href="#Winograd算法" class="headerlink" title="Winograd算法"></a>Winograd算法</h2><p>winograd说白了，就是用加法来代替矩阵的乘法。那么如何用加法来代替乘法呢？</p>
-<p><img src="./assets/1561618157960.png" alt="1561618157960"></p>
+<p><img src="/images/1561618157960.png" alt="1561618157960"></p>
 <p>这图说明了，使用winnograd加速可以做到比CUDNN还快，实际上CUDNN中的实现是用GEMM实现的。</p>
 
       
@@ -604,7 +604,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-count">35</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>

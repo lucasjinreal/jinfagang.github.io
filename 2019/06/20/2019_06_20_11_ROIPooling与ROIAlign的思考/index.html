@@ -115,14 +115,14 @@
 <meta property="og:site_name" content="金天的个人博客">
 <meta property="og:description" content="本文介绍 ROIPooling与ROIAlign的思考">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://yoursite.com/2019/06/20/assets/roipooling.png">
-<meta property="og:image" content="http://yoursite.com/2019/06/20/assets/1561010577032.png">
-<meta property="og:image" content="http://yoursite.com/2019/06/20/assets/linearinterlate.png">
-<meta property="og:updated_time" content="2020-02-17T06:01:58.934Z">
+<meta property="og:image" content="http://yoursite.com/images/roipooling.png">
+<meta property="og:image" content="http://yoursite.com/images/1561010577032.png">
+<meta property="og:image" content="http://yoursite.com/images/linearinterlate.png">
+<meta property="og:updated_time" content="2020-02-17T06:10:03.958Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="ROIPooling与ROIAlign的思考">
 <meta name="twitter:description" content="本文介绍 ROIPooling与ROIAlign的思考">
-<meta name="twitter:image" content="http://yoursite.com/2019/06/20/assets/roipooling.png">
+<meta name="twitter:image" content="http://yoursite.com/images/roipooling.png">
 
 
 
@@ -400,7 +400,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2020-02-17 14:01:58" itemprop="dateModified" datetime="2020-02-17T14:01:58+08:00">2020-02-17</time>
+                <time title="修改时间：2020-02-17 14:10:03" itemprop="dateModified" datetime="2020-02-17T14:10:03+08:00">2020-02-17</time>
               
             
           </span>
@@ -464,7 +464,7 @@
 <p>This article was original written by Jin Tian, welcome re-post, first come with <a href="https://jinfagang.github.io" target="_blank" rel="noopener">https://jinfagang.github.io</a> . but please keep this copyright info, thanks, any question could be asked via wechat: <code>jintianiloveu</code> </p>
 </blockquote>
 <p>ROIPooling 是FasterRCNN里面使用的层， 它的作用是抽取出合适的特征来做物体检测和位置回归，而ROIAlign是MaskRCNN中使用的，它的作用是抽取合适的特征同时解决ROIPooling中由于Pooling操作导致的特征对齐问题。</p>
-<p><img src="../assets/roipooling.png" alt=""></p>
+<p><img src="/images/roipooling.png" alt=""></p>
 <p>从上图可以看出，ROIPoolin经过两次舍弃操作之后，最后的特征图，跟原始图片的位置很难对应准确，因为我们的尺寸是按照比例缩小的，如果除不尽，那么必然带来精度的缩减（为什么除的尽就不会带来精度的缩减呢？）</p>
 <p>那么ROIAlign是如何规避这个问题的？</p>
 <p>其实ROIAlign使用的解决方案很直接：<strong>你不是会进行两次取舍吗？我不取舍行不行？直接用小数点表示行不行？等到最后Pooling的时候我用插值行不行？</strong></p>
@@ -476,11 +476,11 @@
 <h2 id="tf中实现ROIAlign细节及原理"><a href="#tf中实现ROIAlign细节及原理" class="headerlink" title="tf中实现ROIAlign细节及原理"></a>tf中实现ROIAlign细节及原理</h2><p>与其思考，不如从代码上直接来实现。实现上tf里面的 <code>tf.image.crop_and_resize</code> 方法几乎就实现了ROIAlign的步骤。我们看一个例子：</p>
 <p>假如一个图片，<code>a = tf.constant([[[1],[2]], [[3], [4]]])</code>。 我们将其采样一个box，区域为：<code>box = tf.constant([[0.2, 0.3, 0.2, 0.3]])</code>.</p>
 <p>你可能会感觉到奇怪，这个区域为什么是0.2， 0.3？到这里问题就出现了，此时我们必须要将图片想象成为一个连续的纸，而不是矩阵：</p>
-<p><img src="../assets/1561010577032.png" alt="1561010577032"></p>
+<p><img src="/images/1561010577032.png" alt="1561010577032"></p>
 <p>其实本质上，我们的图片仅仅只有四个像素值，但是你要让我求（0.2, 0.3) 这个坐标出的像素值，这不是为难我吗？既然我们索引不到任何值，那我们只能插值了。<strong>实际上当你用小数点去索取一个非整数值的时候，本质上你就是在让别人进行插值操作，为什么呢？因为你得创造新的像素点，而这个像素点像素值的计算只能通过插值进行</strong>.</p>
 <p>那么插值是怎么求的呢？其实也很简单，现在x方向上求得插值，然后根据两个中间值，比如R1和R2，进行y方向求插值。</p>
 <p>最常见的插值方式是<strong>线性插值</strong>. </p>
-<p><img src="../assets/linearinterlate.png" alt=""></p>
+<p><img src="/images/linearinterlate.png" alt=""></p>
 <p>上图详细的阐述了如何计算在矩阵下标不是整数时，如何求取对应的像素点值。</p>
 <p>通过tensorflow代码来验证一下：</p>
 <figure class="highlight python"><table><tr><td class="code"><pre><div class="line">a = tf.constant([[[<span class="number">1</span>],[<span class="number">2</span>]], [[<span class="number">3</span>], [<span class="number">4</span>]]])</div><div class="line">a = tf.expand_dims(a, axis=<span class="number">0</span>)</div><div class="line"></div><div class="line">box = tf.constant([[<span class="number">0.2</span>, <span class="number">0.3</span>, <span class="number">0.2</span>, <span class="number">0.3</span>]])</div><div class="line">box_ind = tf.constant([<span class="number">0</span>])</div><div class="line"></div><div class="line">res = tf.image.crop_and_resize(a, box, box_indices=box_ind, crop_size=tf.constant([<span class="number">1</span>,<span class="number">1</span>]))</div></pre></td></tr></table></figure>
@@ -611,7 +611,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-count">35</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
